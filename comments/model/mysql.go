@@ -9,7 +9,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	log "github.com/micro/micro/v3/service/logger"
 
-	posts "github.com/emadghaffari/micro-blog/posts/proto"
+	com "github.com/emadghaffari/micro-blog/comments/proto"
 	"github.com/emadghaffari/res_errors/logger"
 )
 
@@ -36,11 +36,6 @@ type Model interface {
 	// Deletes a record. Delete only support Equals("id", value) for now.
 	// @todo Delete only supports string keys for now.
 	Delete(query string) error
-}
-
-// ModelOptions struct
-type ModelOptions struct {
-	Debug bool
 }
 
 // New db
@@ -74,8 +69,8 @@ func (m *model) Save(req interface{}) error {
 		return err
 	}
 	query := ""
-	if m.namespace == "posts" {
-		query = "INSERT INTO posts(title,slug,description,user_id,image) VALUES(?,?,?,?,?);"
+	if m.namespace == "comments" {
+		query = "INSERT INTO comments(title,description,user_id,post_id) VALUES(?,?,?,?);"
 	}
 	if query == "" {
 		return fmt.Errorf("invalid database namespace")
@@ -86,7 +81,7 @@ func (m *model) Save(req interface{}) error {
 	}
 	defer tx.Commit()
 
-	if err := m.store.QueryRow(query, ms["title"], ms["slug"], ms["description"], ms["user_id"], ms["image"]).Err(); err != nil {
+	if err := m.store.QueryRow(query, ms["title"], ms["description"], ms["user_id"], ms["post_id"]).Err(); err != nil {
 		return err
 	}
 
@@ -100,8 +95,8 @@ func (m *model) List(req interface{}, resultSlicePointer interface{}) error {
 		return err
 	}
 	query := ""
-	if m.namespace == "posts" {
-		query = "SELECT id,title,slug,description,user_id,image FROM posts "
+	if m.namespace == "comments" {
+		query = "SELECT id,title,description,user_id,post_id,created FROM comments "
 		if len(ms) > 0 {
 			query += "WHERE "
 			for k, v := range ms {
@@ -112,8 +107,6 @@ func (m *model) List(req interface{}, resultSlicePointer interface{}) error {
 			// remove last AND
 			query = query[:len(query)-4]
 		}
-
-		log.Info("Query: ", query)
 	}
 	if query == "" {
 		return fmt.Errorf("invalid database namespace")
@@ -129,15 +122,11 @@ func (m *model) List(req interface{}, resultSlicePointer interface{}) error {
 		return err
 	}
 	defer row.Close()
-	result := make([]*posts.Post, 0)
-	var img *string
+	result := make([]*com.Comment, 0)
 	for row.Next() {
-		var item posts.Post
-		if err := row.Scan(&item.Id, &item.Title, &item.Slug, &item.Description, &item.Author, &img); err != nil {
+		var item com.Comment
+		if err := row.Scan(&item.Id, &item.Title, &item.Description, &item.UserId, &item.PostId, &item.Created); err != nil {
 			return err
-		}
-		if img != nil {
-			item.Image = *img
 		}
 
 		result = append(result, &item)
