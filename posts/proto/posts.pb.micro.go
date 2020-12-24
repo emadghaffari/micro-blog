@@ -43,6 +43,8 @@ func NewPostsEndpoints() []*api.Endpoint {
 
 type PostsService interface {
 	Call(ctx context.Context, in *Request, opts ...client.CallOption) (*Response, error)
+	Store(ctx context.Context, in *StoreRequest, opts ...client.CallOption) (*StoreResponse, error)
+	Get(ctx context.Context, in *GetRequest, opts ...client.CallOption) (*GetResponse, error)
 }
 
 type postsService struct {
@@ -67,15 +69,39 @@ func (c *postsService) Call(ctx context.Context, in *Request, opts ...client.Cal
 	return out, nil
 }
 
+func (c *postsService) Store(ctx context.Context, in *StoreRequest, opts ...client.CallOption) (*StoreResponse, error) {
+	req := c.c.NewRequest(c.name, "Posts.Store", in)
+	out := new(StoreResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *postsService) Get(ctx context.Context, in *GetRequest, opts ...client.CallOption) (*GetResponse, error) {
+	req := c.c.NewRequest(c.name, "Posts.Get", in)
+	out := new(GetResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Posts service
 
 type PostsHandler interface {
 	Call(context.Context, *Request, *Response) error
+	Store(context.Context, *StoreRequest, *StoreResponse) error
+	Get(context.Context, *GetRequest, *GetResponse) error
 }
 
 func RegisterPostsHandler(s server.Server, hdlr PostsHandler, opts ...server.HandlerOption) error {
 	type posts interface {
 		Call(ctx context.Context, in *Request, out *Response) error
+		Store(ctx context.Context, in *StoreRequest, out *StoreResponse) error
+		Get(ctx context.Context, in *GetRequest, out *GetResponse) error
 	}
 	type Posts struct {
 		posts
@@ -90,4 +116,12 @@ type postsHandler struct {
 
 func (h *postsHandler) Call(ctx context.Context, in *Request, out *Response) error {
 	return h.PostsHandler.Call(ctx, in, out)
+}
+
+func (h *postsHandler) Store(ctx context.Context, in *StoreRequest, out *StoreResponse) error {
+	return h.PostsHandler.Store(ctx, in, out)
+}
+
+func (h *postsHandler) Get(ctx context.Context, in *GetRequest, out *GetResponse) error {
+	return h.PostsHandler.Get(ctx, in, out)
 }
