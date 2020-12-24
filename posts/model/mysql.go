@@ -110,9 +110,10 @@ func (m *model) List(req interface{}, resultSlicePointer interface{}) error {
 
 			}
 			// remove last AND
-			query = query[:4]
+			query = query[:len(query)-4]
 		}
 
+		log.Info("Query: ", query)
 	}
 	if query == "" {
 		return fmt.Errorf("invalid database namespace")
