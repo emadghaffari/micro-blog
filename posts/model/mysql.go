@@ -38,11 +38,6 @@ type Model interface {
 	Delete(query string) error
 }
 
-// ModelOptions struct
-type ModelOptions struct {
-	Debug bool
-}
-
 // New db
 func New(namespace string) Model {
 	var err error
@@ -112,8 +107,6 @@ func (m *model) List(req interface{}, resultSlicePointer interface{}) error {
 			// remove last AND
 			query = query[:len(query)-4]
 		}
-
-		log.Info("Query: ", query)
 	}
 	if query == "" {
 		return fmt.Errorf("invalid database namespace")
