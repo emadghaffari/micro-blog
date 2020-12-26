@@ -3,9 +3,6 @@ package main
 import (
 	"github.com/micro/micro/service"
 	"github.com/micro/micro/v3/service/logger"
-
-	"github.com/emadghaffari/micro-blog/posts/handler"
-	tags "github.com/emadghaffari/micro-blog/tags/proto"
 )
 
 func main() {
@@ -15,9 +12,9 @@ func main() {
 		service.Version("latest"),
 	)
 
-	srv.Handle(handler.NewPosts(
-		tags.NewTagsService("tags", srv.Client()),
-	))
+	// srv.Handle(handler.NewPosts(
+	// 	tags.NewTagsService("tags", srv.Client()),
+	// ))
 	// Register handler
 
 	// Run service
