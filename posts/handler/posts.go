@@ -7,16 +7,18 @@ import (
 
 	"github.com/emadghaffari/micro-blog/posts/model"
 	posts "github.com/emadghaffari/micro-blog/posts/proto"
+	tags "github.com/emadghaffari/micro-blog/tags/proto"
 )
 
 // Posts struct
 type Posts struct {
-	m model.Model
+	m    model.Model
+	Tags tags.TagsService
 }
 
 // NewPosts return Posts pointer
-func NewPosts() *Posts {
-	return &Posts{m: model.New("posts")}
+func NewPosts(tagsService tags.TagsService) *Posts {
+	return &Posts{m: model.New("posts"), Tags: tagsService}
 }
 
 // Call is a single request handler called via client.Call or the generated client code
@@ -33,6 +35,18 @@ func (p *Posts) Store(ctx context.Context, req *posts.StoreRequest, rsp *posts.S
 		log.Warn(err.Error())
 		rsp.Msg = err.Error()
 	}
+
+	for _, tagName := range req.Tags {
+		_, err := p.Tags.Add(ctx, &tags.AddRequest{
+			ResourceID: req.Id,
+			Type:       "posts",
+			Title:      tagName,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
 	rsp.Msg = "stored " + req.Title + " by user: " + req.UserId
 	return nil
 }

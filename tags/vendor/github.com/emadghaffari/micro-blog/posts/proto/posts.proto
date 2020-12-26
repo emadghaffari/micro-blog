@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package posts;
+
+option go_package = "proto;posts";
+
+service Posts {
+	rpc Call(Request) returns (Response) {}
+	rpc Store (StoreRequest) returns (StoreResponse) {}
+	rpc Get (GetRequest) returns (GetResponse) {}
+}
+
+message Post {
+	string id = 1;
+	string title = 2;
+	string slug = 3;
+	string description = 4;
+	int64 created = 5;
+	int64 updated = 6;
+	string author = 7;	
+	string image = 8;
+}
+
+message Request {
+	string name = 1;
+}
+
+message Response {
+	string msg = 1;
+}
+
+message StoreRequest {
+	string title = 1;
+	string slug = 2;
+	string description = 3;
+	string user_id = 4;	
+	string image = 5;
+}
+
+message StoreResponse {
+	string msg = 1;
+}
+
+message GetRequest {
+	string id = 1;
+	string slug = 2;
+}
+message GetResponse {
+	repeated Post posts = 1;
+}

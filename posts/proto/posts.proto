@@ -35,6 +35,8 @@ message StoreRequest {
 	string description = 3;
 	string user_id = 4;	
 	string image = 5;
+	repeated string tags = 6;
+	string id = 7;
 }
 
 message StoreResponse {
